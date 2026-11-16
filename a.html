@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A</title>
+    <style>
+        :root {
+            --bg-body: #050505;
+            --bg-window: #111111;
+            --accent: #9d4edd;
+            --accent-glow: #c77dff;
+            --text: #e0e0e0;
+            --border: #2a2a2a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-body);
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* 画面いっぱいに広がるようにサイズを変更 */
+        .browser-container {
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-window);
+            border: none; /* 全画面時は枠線を消してスッキリさせています */
+            border-radius: 0; /* 角丸をリセット */
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .browser-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .toolbar {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #0a0a0a;
+        }
+
+        .url-input {
+            flex-grow: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: var(--accent-glow);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: inherit;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .url-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 5px rgba(157, 78, 221, 0.3);
+        }
+
+        button {
+            background: var(--accent);
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            text-transform: uppercase;
+            font-size: 12px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background: var(--accent-glow);
+        }
+
+        #fs-btn {
+            padding: 8px 12px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .viewport {
+            flex-grow: 1;
+            position: relative;
+            background: #fff;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-window);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(157, 78, 221, 0.3);
+            border-top-color: var(--accent-glow);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="browser-container" id="browser-window">
+        <div class="toolbar">
+            <input type="text" class="url-input" id="address" value="http://giant-reload.onrender.com/" placeholder="Enter URL...">
+            <button id="load-btn">Load</button>
+            <button id="fs-btn">&#x26F6;</button>
+        </div>
+
+        <div class="viewport">
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+            </div>
+            <iframe id="frame"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const address = document.getElementById('address');
+        const loadBtn = document.getElementById('load-btn');
+        const fsBtn = document.getElementById('fs-btn');
+        const frame = document.getElementById('frame');
+        const loader = document.getElementById('loader');
+        const browserWindow = document.getElementById('browser-window');
+
+        function navigate() {
+            let url = address.value.trim();
+            if (!url) return;
+
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+
+            loader.classList.remove('hidden');
+            frame.src = url;
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                browserWindow.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        frame.onload = () => {
+            loader.classList.add('hidden');
+        };
+
+        loadBtn.addEventListener('click', navigate);
+        fsBtn.addEventListener('click', toggleFullscreen);
+
+        address.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') navigate();
+        });
+
+        navigate();
+    </script>
+
+</body>
+</html>
